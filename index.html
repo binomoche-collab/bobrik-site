@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>бобрик</title>
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            width: 100%;
+            font-family: Arial, sans-serif;
+        }
+        
+        body {
+            background: radial-gradient(circle at top right, #ec8386, #f8e29a);
+            background-attachment: fixed;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .container {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            width: 90%;
+            max-width: 500px;
+        }
+        
+        h1 {
+            color: #5a2a2a;
+            text-align: center;
+            margin-bottom: 5px;
+        }
+        
+        h3 {
+            color: #7a4a4a;
+            text-align: center;
+            margin: 10px 0;
+        }
+        
+        h4 {
+            color: #7a4a4a;
+            font-weight: normal;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        form {
+            margin-top: 20px;
+        }
+        
+        label {
+            color: #5a2a2a;
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+        
+        input[type="text"],
+        input[type="tel"],
+        input[type="email"] {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #f0b6b8;
+            border-radius: 8px;
+            font-size: 16px;
+            margin-bottom: 15px;
+            box-sizing: border-box;
+            background-color: rgba(255, 255, 255, 0.9);
+            transition: all 0.3s ease;
+        }
+        
+        input[type="text"]:focus,
+        input[type="tel"]:focus,
+        input[type="email"]:focus {
+            outline: none;
+            border-color: #ec8386;
+            box-shadow: 0 0 0 3px rgba(236, 131, 134, 0.2);
+        }
+        
+        input[type="submit"] {
+            background: linear-gradient(to right, #ec8386, #f8e29a);
+            color: white;
+            padding: 14px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-top: 10px;
+        }
+        
+        input[type="submit"]:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        #message {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: rgba(236, 131, 134, 0.1);
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid rgba(236, 131, 134, 0.3);
+        }
+        
+        .success {
+            color: #2e7d32;
+            background-color: rgba(46, 125, 50, 0.1);
+            border-color: rgba(46, 125, 50, 0.3);
+        }
+        
+        .error {
+            color: #c62828;
+            background-color: rgba(198, 40, 40, 0.1);
+            border-color: rgba(198, 40, 40, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Зарегистрируйтесь</h1>
+        <h4>пожалуйста)</h4>
+
+        <form id="registrationForm">
+            <label for="name">Введите имя</label>
+            <input type="text" id="name" name="name" placeholder="Ваше имя" required>
+            
+            <label for="phone">Введите номер телефона</label>
+            <input type="tel" id="phone" name="phone" placeholder="+7 (XXX) XXX-XX-XX" required>
+            
+            <label for="email">Введите почту</label>
+            <input type="email" id="email" name="email" placeholder="example@mail.ru" required>
+            
+            <input type="submit" value="Отправить на сервер">
+        </form>
+        <div id="message"></div>
+    </div>
+
+    <script>
+        async function print_message(event) {
+            event.preventDefault();
+            
+            // Получаем данные из формы
+            const name = document.getElementById("name").value;
+            const phone = document.getElementById("phone").value;
+            const email = document.getElementById("email").value;
+            const messageDiv = document.getElementById("message");
+            
+            try {
+                // Отправляем данные на сервер
+                const response = await fetch('http://localhost:8000/save-data', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        name: name,
+                        phone: phone,
+                        email: email
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    // Успешная отправка
+                    messageDiv.innerHTML = 
+                        `<h3>Данные успешно сохранены!</h3>
+                         <p>Имя: ${name}</p>
+                         <p>Телефон: ${phone}</p>
+                         <p>Почта: ${email}</p>
+                         <p><small>Данные сохранены в файле users.txt</small></p>`;
+                    messageDiv.className = 'success';
+                    
+                    // Очищаем форму
+                    document.getElementById("registrationForm").reset();
+                } else {
+                    // Ошибка сервера
+                    messageDiv.innerHTML = `<h3>Ошибка: ${result.error}</h3>`;
+                    messageDiv.className = 'error';
+                }
+            } catch (error) {
+                // Ошибка сети
+                messageDiv.innerHTML = 
+                    `<h3>Ошибка соединения с сервером</h3>
+                     <p>Имя: ${name}</p>
+                     <p>Телефон: ${phone}</p>
+                     <p>Почта: ${email}</p>
+                     <p><small>Сервер недоступен. Данные не сохранены.</small></p>`;
+                messageDiv.className = 'error';
+            }
+            
+            return false;
+        }
+        
+        // Назначаем обработчик формы
+        document.getElementById('registrationForm').addEventListener('submit', print_message);
+    </script>
+</body>
+</html>
